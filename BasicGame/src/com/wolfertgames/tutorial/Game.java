@@ -4,7 +4,9 @@ import java.awt.*;
 import java.awt.image.*;
 
 import com.wolfertgames.tutorial.display.Display;
+import com.wolfertgames.tutorial.gfx.Assets;
 
+//Video Game Infrastructure
 public class Game implements Runnable{
 	
 	private Display display;
@@ -21,13 +23,13 @@ public class Game implements Runnable{
 		this.title = title;
 		this.width = width;
 		this.height = height;
-		
 		running = false;
 	}
 	
 	//Runs Once to initialize game variables
 	private void init() {
 		display = new Display(title, width, height);
+		Assets.init();
 	}
 	
 	//Process and Update Game Variables
@@ -47,8 +49,7 @@ public class Game implements Runnable{
 		
 		//All drawing commands go here
 		{
-			graphicsObject.setColor(Color.ORANGE);
-			graphicsObject.fillRect(0, 0, width, height);
+			graphicsObject.drawImage(Assets.sprites[2][0],10,10, null);
 		}
 		
 		//Tell Java VM we are done drawing, direct the buffer to the screen
