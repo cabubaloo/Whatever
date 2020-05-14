@@ -7,10 +7,12 @@ public class Assets {
 	
 	public static BufferedImage[][] sprites;
 	public static BufferedImage[][] tiles;
+	public static BufferedImage[][] ui;
 	public static BufferedImage[][] anim;
 	
 	public static BufferedImage[] water, waterMudS, mudWaterC, mudWaterS, waterMudC;
 	public static BufferedImage test, mud, stone, player;
+	public static BufferedImage button, buttonPressed;
 	
 	//Loads all assets into member variables to be accessed elsewhere
 	public static void init() {
@@ -31,6 +33,11 @@ public class Assets {
 		SpriteSheet animSheet = new SpriteSheet(ImageLoader.loadImage("/textures/ReyermoAnimations.png"), 8, 8, 5, 2);
 		anim = new BufferedImage[5][2];
 		animSheet.fillArray(anim);
+		
+		//UI buttons
+		SpriteSheet uiSheet = new SpriteSheet(ImageLoader.loadImage("/textures/UIbuttons.png"), 32, 16, 2, 2);
+		ui = new BufferedImage[2][2];
+		uiSheet.fillArray(ui);
 		
 		test = sprites[1][1];
 		player = sprites[7][6];
@@ -66,6 +73,9 @@ public class Assets {
 		
 		stone = tiles[0][0];
 		mud = tiles[0][5];
+		
+		button = ui[0][0];
+		buttonPressed = ui[0][1];
 		
 	}
 	

@@ -3,10 +3,14 @@ package com.wolfertgames.tutorial;
 import java.awt.*;
 import java.awt.image.*;
 import com.wolfertgames.tutorial.display.Display;
+import com.wolfertgames.tutorial.gfx.Assets;
 import com.wolfertgames.tutorial.gfx.GameCamera;
 import com.wolfertgames.tutorial.input.KeyManager;
+import com.wolfertgames.tutorial.input.MouseManager;
 import com.wolfertgames.tutorial.states.GameState;
+import com.wolfertgames.tutorial.states.MenuState;
 import com.wolfertgames.tutorial.states.State;
+import com.wolfertgames.tutorial.tiles.Tile;
 
 //Video Game Infrastructure
 public class Game implements Runnable{
@@ -24,6 +28,7 @@ public class Game implements Runnable{
 	private Graphics g;
 	
 	private KeyManager keyManager;
+	private MouseManager mouseManager;
 	
 	private State currentState;
 	
@@ -37,6 +42,10 @@ public class Game implements Runnable{
 	
 	public KeyManager getKeyManager() {
 		return keyManager;
+	}
+	
+	public MouseManager getMouseManager() {
+		return mouseManager;
 	}
 	
 	public GameCamera getCamera() {
@@ -55,18 +64,25 @@ public class Game implements Runnable{
 		return height;
 	}
 	
-	/////// Constructors ///////
+	public State getCurrentState() {
+		return currentState;
+	}
+
+	public void setCurrentState(State currentState) {
+		this.currentState = currentState;
+	}
 	
+	/////// Constructors ///////
+
 	public Game(String title, int width, int height) {
 		this.title = title;
 		this.width = width;
 		this.height = height;
 		
 		keyManager = new KeyManager();
-		camera = new GameCamera(this, 0, 0);
+		mouseManager = new MouseManager();
 		handler = new Handler(this);
 		
-		currentState = new GameState(handler);
 		running = false;
 	}
 	
@@ -74,14 +90,25 @@ public class Game implements Runnable{
 	
 	//Runs Once to initialize game variables
 	private void init() {
+		
+		Assets.init();
+		Tile.init();
+		
 		display = new Display(title, width, height);
 		display.getFrame().addKeyListener(keyManager);
+		display.getFrame().addMouseListener(mouseManager);
+		display.getCanvas().addMouseListener(mouseManager);
+		display.getFrame().addMouseMotionListener(mouseManager);
+		display.getCanvas().addMouseMotionListener(mouseManager);
+		
+		camera = new GameCamera(this, 0, 0);
+		currentState = new MenuState(handler);
 	}
 	
 	//Process and Update Game Variables
 	private void tick() {
 		keyManager.tick();
-		currentState = currentState.tick(); 
+		currentState.tick(); 
 	}
 	
 	//Update Graphical Elements

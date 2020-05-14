@@ -11,12 +11,12 @@ public class Player extends Creature {
 	
 	private Animation animDown, animUp, animLeft, animRight, animStill;
 	
-	public Player(Handler handler, BufferedImage texture, float x, float y) {
-		super(handler, texture, x, y, Creature.DEFAULT_CREATURE_WIDTH, Creature.DEFAULT_CREATURE_HEIGHT);
+	public Player(Handler handler, float x, float y) {
+		super(handler, Assets.player, x, y, Creature.DEFAULT_CREATURE_WIDTH, Creature.DEFAULT_CREATURE_HEIGHT);
 		bounds = new Rectangle(Creature.DEFAULT_CREATURE_WIDTH / 5,
-							   Creature.DEFAULT_CREATURE_HEIGHT / 5,
+							   Creature.DEFAULT_CREATURE_HEIGHT * 4 / 5,
 							   Creature.DEFAULT_CREATURE_WIDTH * 3 / 5,
-							   Creature.DEFAULT_CREATURE_HEIGHT * 3 / 5);
+							   Creature.DEFAULT_CREATURE_HEIGHT / 5);
 		
 		animStill = new Animation(500, Assets.anim[0]);
 		animDown = new Animation(500, Assets.anim[3]);
@@ -60,7 +60,7 @@ public class Player extends Creature {
 		//System.out.println("Player Coords: " + x + ", " + y);
 		//System.out.println("Camera Coords: " + game.getCamera().getxOffset() + ", " + game.getCamera().getyOffset());
 		g.drawImage(getAnimationFrame(), (int)(x - handler.getCamera().getxOffset()), (int)(y - handler.getCamera().getyOffset()), width, height, null);
-		drawBoudingBox(g);
+	    //drawBoudingBox(g);
 	}
 	
 	private BufferedImage getAnimationFrame() {

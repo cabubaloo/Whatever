@@ -53,7 +53,8 @@ public abstract class Creature extends Entity {
 			if (!collisionWithWorld(tileRX, (int) (y + bounds.y) / Tile.TILE_HEIGHT) &&
 			    !collisionWithWorld(tileRX, (int) (y + bounds.y + bounds.height) / Tile.TILE_HEIGHT) &&
 			    !collisionWithWorld(tileLX, (int) (y + bounds.y) / Tile.TILE_HEIGHT) &&
-			    !collisionWithWorld(tileLX, (int) (y + bounds.y + bounds.height) / Tile.TILE_HEIGHT)) {
+			    !collisionWithWorld(tileLX, (int) (y + bounds.y + bounds.height) / Tile.TILE_HEIGHT) &&
+			    !checkEntityCollisions(deltaX, 0)) {
 				x += deltaX;
 				break;
 			}
@@ -74,7 +75,8 @@ public abstract class Creature extends Entity {
 			if (!collisionWithWorld((int) (x + bounds.x) / Tile.TILE_WIDTH, tileDX) &&
 			    !collisionWithWorld((int) (x + bounds.x + bounds.width) / Tile.TILE_WIDTH, tileDX) &&
 			    !collisionWithWorld((int) (x + bounds.x) / Tile.TILE_WIDTH, tileUX) &&
-			    !collisionWithWorld((int) (x + bounds.x + bounds.width) / Tile.TILE_WIDTH, tileUX)) {
+			    !collisionWithWorld((int) (x + bounds.x + bounds.width) / Tile.TILE_WIDTH, tileUX) &&
+			    !checkEntityCollisions(0, deltaY)) {
 				y += deltaY;
 				break;
 			}

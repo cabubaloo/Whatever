@@ -2,6 +2,8 @@ package com.wolfertgames.tutorial;
 
 import com.wolfertgames.tutorial.gfx.GameCamera;
 import com.wolfertgames.tutorial.input.KeyManager;
+import com.wolfertgames.tutorial.input.MouseManager;
+import com.wolfertgames.tutorial.states.State;
 import com.wolfertgames.tutorial.world.World;
 
 public class Handler {
@@ -15,6 +17,18 @@ public class Handler {
 	
 	public KeyManager getKeyManager() {
 		return game.getKeyManager();
+	}
+	
+	public MouseManager getMouseManager() {
+		return game.getMouseManager();
+	}
+	
+	public State getCurrentState() {
+		return game.getCurrentState();
+	}
+	
+	public void setCurrentState(State s) {
+		game.setCurrentState(s);
 	}
 	
 	public GameCamera getCamera() {

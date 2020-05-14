@@ -40,6 +40,20 @@ public abstract class Entity {
 		g.drawRect((int) (x + bounds.x - handler.getCamera().getxOffset()), (int) (y + bounds.y - handler.getCamera().getyOffset()), bounds.width, bounds.height);
 	}
 	
+	public Rectangle getCollisionBounds(float xOffset, float yOffset) {
+		return new Rectangle((int) (x + bounds.x + xOffset), (int) (y + bounds.y + yOffset), bounds.width, bounds.height);
+	}
+	
+	public boolean checkEntityCollisions(float xOffset, float yOffset) {
+		for (Entity e : handler.getWorld().getEntityManager().getEntities()) {
+			if (e.equals(this)) continue;
+			if (e.getCollisionBounds(0f, 0f).intersects(this.getCollisionBounds(xOffset, yOffset))) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/////// GETTERS / SETTERS ///////
 
 	public float getX() {

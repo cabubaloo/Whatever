@@ -2,6 +2,9 @@ package com.wolfertgames.tutorial.world;
 
 import java.awt.Graphics;
 import com.wolfertgames.tutorial.Handler;
+import com.wolfertgames.tutorial.entities.EntityManager;
+import com.wolfertgames.tutorial.entities.creatures.Player;
+import com.wolfertgames.tutorial.entities.statics.Tree;
 import com.wolfertgames.tutorial.tiles.Tile;
 import com.wolfertgames.tutorial.utils.Utilities;
 
@@ -12,15 +15,22 @@ public class World {
 	private int spawnX, spawnY;
 	private int[][] tiledata;
 	
+	private EntityManager entityManager;
+	
 	public World(Handler handler, String path) {
 		this.handler = handler;
 		loadWorld(path);
+		entityManager = new EntityManager(handler, new Player(handler, (int) spawnX * Tile.TILE_WIDTH, (int) spawnY * Tile.TILE_HEIGHT));
+		entityManager.addEntity(new Tree(handler, (int) 5 * Tile.TILE_WIDTH, (int) 5 * Tile.TILE_HEIGHT));
+		entityManager.addEntity(new Tree(handler, (int) 6 * Tile.TILE_WIDTH, (int) 5 * Tile.TILE_HEIGHT));
+		entityManager.addEntity(new Tree(handler, (int) 7 * Tile.TILE_WIDTH, (int) 5 * Tile.TILE_HEIGHT));
 		
 	}
 	
 	/////// MEMBER FUNCTIONS ///////
 	
 	public void tick() {
+		entityManager.tick();
 	}
 	
 	public void render(Graphics g) {
@@ -30,14 +40,13 @@ public class World {
 		int negXEdge = Math.max(0, (int) handler.getCamera().getxOffset() / Tile.TILE_WIDTH);
 		int negYEdge = Math.max(0, (int) handler.getCamera().getyOffset() / Tile.TILE_HEIGHT);
 		
-		int tilecnt = 0;
 		for (int i = negXEdge ; i < posXEdge; i++) {
 			for (int j = negYEdge; j < posYEdge; j++) {
-				tilecnt++;
 				getTile(i,j).render(g, (int)(i * Tile.TILE_WIDTH - handler.getCamera().getxOffset()), (int)(j * Tile.TILE_HEIGHT - handler.getCamera().getyOffset()));
 			}
 		}
-		//System.out.println("Tiles Rendered: " + tilecnt);
+		
+		entityManager.render(g);
 	}
 	
 	//Retrieves Tile Class from array indices
@@ -114,6 +123,22 @@ public class World {
 
 	public void setTiledata(int[][] tiledata) {
 		this.tiledata = tiledata;
+	}
+
+	public Handler getHandler() {
+		return handler;
+	}
+
+	public void setHandler(Handler handler) {
+		this.handler = handler;
+	}
+
+	public EntityManager getEntityManager() {
+		return entityManager;
+	}
+
+	public void setEntityManager(EntityManager entityManager) {
+		this.entityManager = entityManager;
 	}
 	
 	
