@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage;
 public class SpriteSheet {
 	
 	private BufferedImage sheet;
-	private BufferedImage errorImage = ImageLoader.loadImage("/textures/Error.png");
 	
 	private final int spriteWidth;
 	private final int spriteHeight;
@@ -37,7 +36,7 @@ public class SpriteSheet {
 	public BufferedImage tile(int x, int y) {
 		if (x >= spritesAcross || y >= spritesDown) {
 			System.out.println("SpriteSheet.tiles() out of range");
-			return errorImage;
+			return null;
 		}
 		return crop(x * spriteWidth, y * spriteHeight, spriteWidth, spriteHeight);
 	}

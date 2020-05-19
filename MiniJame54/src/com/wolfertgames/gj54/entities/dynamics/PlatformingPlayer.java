@@ -9,12 +9,14 @@ import com.wolfertgames.mj54.Handler;
 import com.wolfertgames.mj54.display.gfx.Animation;
 import com.wolfertgames.mj54.display.gfx.Assets;
 import com.wolfertgames.mj54.entities.Entity;
+import com.wolfertgames.mj54.sound.AudioPlayer;
 
 public class PlatformingPlayer extends Newtonian {
 	
 	protected final float speed = 10f;
 	
-	protected Animation walking, idle;
+	protected Animation idle = Assets.breathing;
+	protected Animation walking= Assets.running;
 	
 	private boolean prevUp = false;
 	
@@ -32,6 +34,9 @@ public class PlatformingPlayer extends Newtonian {
 	
 	@Override
 	public void tick(float deltaTime) {
+		idle.tick();
+		//walking.setSpeed((int) (1000 - dPos.x * 30));
+		walking.tick();
 		if (onGround()) jumps = 0; 
 		move(deltaTime, handler.getWorld().getEntityManager());
 		prevUp = handler.getKeyManager().up;
@@ -43,8 +48,18 @@ public class PlatformingPlayer extends Newtonian {
 		//System.out.println("Player Coords: " + x + ", " + y);
 		//System.out.println("Camera Coords: " + game.getCamera().getxOffset() + ", " + game.getCamera().getyOffset());
 		if (isVisible()) {
-			g.drawImage(getImage(), (int)(position.x - handler.getCamera().getXOffset()), (int)(position.y - handler.getCamera().getYOffset()),
-					120, 160, null);
+			if (inputEnabled) {
+				if (dPos.x < 5) {
+					g.drawImage(getImage(), (int)(position.x - handler.getCamera().getXOffset()) + 65, (int)(position.y - handler.getCamera().getYOffset()),
+							-120, 160, null);
+				} else {
+					g.drawImage(getImage(), (int)(position.x - handler.getCamera().getXOffset()), (int)(position.y - handler.getCamera().getYOffset()),
+							120, 160, null);
+				}
+			} else {
+				g.drawImage(Assets.playerIdle, (int)(position.x - handler.getCamera().getXOffset()), 80 + (int)(position.y - handler.getCamera().getYOffset()),
+						120, 80, null);
+			}
 		    //drawBoudingBox(g);
 		}
 	}
@@ -52,31 +67,31 @@ public class PlatformingPlayer extends Newtonian {
 	private Image getImage() {
 		if (!onGround()) {
 			return Assets.playerJumping;
-		} else if (Math.abs(velocity.x) > 1) {
-			return Assets.playerWalking;
+		} else if (Math.abs(dPos.x) > 5) {
+			return walking.getCurrentFrame();
 		} else {
-			return Assets.playerIdle;
+			return idle.getCurrentFrame();
 		}
 	}
+	
 
 	@Override 
 	public void sumForces() {
 		
-		float floorResistance = 10f;
-		float airResistance = 0.5f;
-		
-		force.zero();
-		force.x += handler.getWorld().getGravity().x;
-		force.y += handler.getWorld().getGravity().y;
-		force.x -= airResistance * velocity.x;
-		force.y -= airResistance * velocity.y;
-		
-		if (onGround()) {
-			force.x -= floorResistance * velocity.x;
-		}
-		
-		
 		if (inputEnabled) {
+		
+			float floorResistance = 10f;
+			float airResistance = 0.5f;
+			
+			force.zero();
+			force.x += handler.getWorld().getGravity().x;
+			force.y += handler.getWorld().getGravity().y;
+			force.x -= airResistance * velocity.x;
+			force.y -= airResistance * velocity.y;
+			
+			if (onGround()) {
+				force.x -= floorResistance * velocity.x;
+			}
 			
 			if (handler.getKeyManager().up) {
 				if (jumpEnabled && onGround()) {
@@ -109,12 +124,14 @@ public class PlatformingPlayer extends Newtonian {
 	}
 
 	private void wallJump(int direction) {
+		new AudioPlayer(Assets.jump);
 		force.y -= speed * 30;
 		force.x += speed * 30 * direction;
 		jumps++;
 	}
 
 	private void jump() {
+		new AudioPlayer(Assets.jump);
 		force.y -= speed * 40;
 		jumps++;
 	}
@@ -166,5 +183,4 @@ public class PlatformingPlayer extends Newtonian {
 	public float getSpeed() {
 		return speed;
 	}
-
 }

@@ -8,21 +8,22 @@ import java.awt.Rectangle;
 
 import com.wolfertgames.mj54.Handler;
 import com.wolfertgames.mj54.display.gfx.AssetBuilder;
+import com.wolfertgames.mj54.display.gfx.Assets;
 
 public class Console extends TextBox {
 	
-	public static final int NUMBER_LINES = 10;
+	public static final int NUMBER_LINES = 13;
 	
-	private String[] strings;
+	private TextLine[] strings;
 	
 	private Image render;
 	private int writeIndex = 0;
 	
 	private boolean fixed = false;
 	
-	public Console(Handler handler, Rectangle textArea, Color background, Color text, Font font) {
-		super(handler, textArea, "EMPTY STRING", background, text, font);
-		strings = new String[NUMBER_LINES];
+	public Console(Handler handler, Rectangle textArea, Color background, Font font) {
+		super(handler, textArea, new TextLine("EMPTY STRING", Color.BLACK), background, font);
+		strings = new TextLine[NUMBER_LINES];
 		updateRender();
 	}
 	
@@ -39,10 +40,16 @@ public class Console extends TextBox {
 	}
 	
 	public void updateRender() {
-		render = AssetBuilder.buildConsole(this);
+		render = AssetBuilder.buildMultiLiner(strings, textArea, backgroundColor, font);
 	}
 	
-	public void addNewLine(String string) {
+	public void addNewLines(TextLine[] newStrings) {
+		for (TextLine t : newStrings) {
+			addNewLine(t);
+		}
+	}
+	
+	public void addNewLine(TextLine string) {
 		if (writeIndex == NUMBER_LINES) {
 			shiftStrings();
 			strings[writeIndex - 1] = string;
@@ -54,15 +61,15 @@ public class Console extends TextBox {
 	
 	private void shiftStrings() {
 		for (int i = 0; i < NUMBER_LINES - 1; i++) {
-			strings[i] = new String(strings[i + 1]);
+			strings[i] = new TextLine(strings[i + 1]);
 		}
 	}
 
-	public String[] getStrings() {
+	public TextLine[] getStrings() {
 		return strings;
 	}
 
-	public void setStrings(String[] strings) {
+	public void setStrings(TextLine[] strings) {
 		this.strings = strings;
 	}
 	

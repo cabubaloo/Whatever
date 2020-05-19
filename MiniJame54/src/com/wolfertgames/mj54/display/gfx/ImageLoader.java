@@ -2,7 +2,6 @@ package com.wolfertgames.mj54.display.gfx;
 
 import java.awt.image.*;
 import java.io.IOException;
-
 import javax.imageio.ImageIO;
 
 public class ImageLoader {

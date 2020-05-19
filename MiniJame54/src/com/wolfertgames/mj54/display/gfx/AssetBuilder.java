@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 
 import com.wolfertgames.mj54.ui.Console;
 import com.wolfertgames.mj54.ui.TextBox;
+import com.wolfertgames.mj54.ui.TextLine;
 import com.wolfertgames.mj54.ui.TimedPopUp;
 
 public class AssetBuilder {
@@ -36,9 +37,9 @@ public class AssetBuilder {
 		g.setColor(t.getBackgroundColor());
 		g.fillRect(0, 0, t.getTextArea().width, t.getTextArea().height);
 		g.drawImage(Assets.enterArrow, 0, 0, 60, 60, null);
-		g.setColor(t.getTextColor());
+		g.setColor(t.getDisplayText().getColor());
 		g.setFont(t.getFont());
-		g.drawString(t.getDisplayText(), 60, 40);
+		g.drawString(t.getDisplayText().getText(), 60, 40);
 		g.dispose();
 		return bufferedImage;
 	}
@@ -48,12 +49,28 @@ public class AssetBuilder {
 		Graphics g = bufferedImage.getGraphics();
 		g.setColor(console.getBackgroundColor());
 		g.fillRect(0, 0, console.getTextArea().width, console.getTextArea().height);
-		g.setColor(console.getTextColor());
 		g.setFont(console.getFont());
 		for (int i = 0; i < Console.NUMBER_LINES; i++) {
-			String s = console.getStrings()[i];
+			TextLine s = console.getStrings()[i];
 			if (s == null) break;
-			g.drawString(s, 10, 30 + (int) (i * console.getFont().getSize() * 1.1));
+			g.setColor(s.getColor());
+			g.drawString(s.getText(), 10, 30 + (int) (i * console.getFont().getSize() * 1.1));
+		}
+		g.dispose();
+		return bufferedImage;
+	}
+	
+	public static Image buildMultiLiner(TextLine[] strings, Rectangle textArea, Color background, Font font) {
+		BufferedImage bufferedImage = new BufferedImage(textArea.width, textArea.height, BufferedImage.TYPE_INT_ARGB);
+		Graphics g = bufferedImage.getGraphics();
+		g.setColor(background);
+		g.fillRect(0, 0, textArea.width, textArea.height);
+		g.setFont(font);
+		for (int i = 0; i < strings.length; i++) {
+			TextLine s = strings[i];
+			if (s == null) break;
+			g.setColor(s.getColor());
+			g.drawString(s.getText(), 10, 30 + (int) (i * font.getSize() * 1.1));
 		}
 		g.dispose();
 		return bufferedImage;
@@ -64,9 +81,9 @@ public class AssetBuilder {
 		Graphics g = bufferedImage.getGraphics();
 		g.setColor(t.getBackgroundColor());
 		g.fillRect(0, 0, t.getTextArea().width, t.getTextArea().height);
-		g.setColor(t.getTextColor());
+		g.setColor(t.getDisplayText().getColor());
 		g.setFont(t.getFont());
-		g.drawString(t.getDisplayText(), 10, (int) (t.getFont().getSize() * 1.1));
+		g.drawString(t.getDisplayText().getText(), 10, (int) (t.getFont().getSize() * 1.1));
 		g.dispose();
 		return bufferedImage;
 	}

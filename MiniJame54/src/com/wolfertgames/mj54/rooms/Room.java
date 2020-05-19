@@ -12,8 +12,8 @@ public class Room {
 	}
 	
 	public void printOptions() {
-		if (goRight() != null) TextHandler.logUser("The " + goRight().getName() + " is to your right.");
-		if (goLeft() != null) TextHandler.logUser("The " + goLeft().getName() + " is to your left.");
+		if (goRight() != null) TextHandler.messageUser("The " + goRight().getName() + " is to your right.");
+		if (goLeft() != null) TextHandler.messageUser("The " + goLeft().getName() + " is to your left.");
 	}
 	
 	public Room goRight() {

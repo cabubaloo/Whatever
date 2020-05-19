@@ -18,9 +18,12 @@ public class UIManager implements MouseEventResponder {
 	}
 	
 	public void tick(float deltaTime) {
-		for (UIObject o : objects) {
-			o.tick(deltaTime);
-		}
+		ListIterator<UIObject> itr = objects.listIterator();
+	    while (itr.hasNext()) {
+	    	UIObject e = itr.next();
+	    	e.tick(deltaTime);
+	    	if (!e.isActive()) itr.remove();
+	    }
 	}
 	
 	public void render(float deltaTime, Graphics g) {

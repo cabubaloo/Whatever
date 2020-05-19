@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.util.Scanner;
 
 import com.wolfertgames.gj54.entities.controllers.Controller;
@@ -27,8 +28,11 @@ import com.wolfertgames.mj54.entities.Entity;
 import com.wolfertgames.mj54.entities.EntityManager;
 import com.wolfertgames.mj54.input.KeyResponder;
 import com.wolfertgames.mj54.input.ReadInString;
+import com.wolfertgames.mj54.sound.AudioPlayer;
 import com.wolfertgames.mj54.ui.Console;
+import com.wolfertgames.mj54.ui.MultiLinePopUp;
 import com.wolfertgames.mj54.ui.TextBox;
+import com.wolfertgames.mj54.ui.TextLine;
 import com.wolfertgames.mj54.ui.TimedPopUp;
 import com.wolfertgames.mj54.ui.UIManager;
 import com.wolfertgames.mj54.world.World;
@@ -44,6 +48,7 @@ public class GameState extends State {
 	
 	//CONSTANTS
 	private static final int PROMPT_HEIGHT = 100;
+	private static final Color promptColor = Color.white;
 
 	
 	//CLASS VARIABLES
@@ -64,6 +69,7 @@ public class GameState extends State {
 	private static int worldEdgeR;
 	
 	static boolean playerDead;
+	static boolean bearSpoke = false;;
 	
 	//DRIVEN GAME OBJECTS
 	public static PlatformingPlayer player;
@@ -73,7 +79,7 @@ public class GameState extends State {
 	public static Entity vault;
 	public static Entity rag;
 	
-	public static TimedPopUp popup;
+	public static MultiLinePopUp popup;
 	
 	//CONSTRUCTOR
 	
@@ -88,7 +94,6 @@ public class GameState extends State {
 	}
 	
 	//PRIMARY METHODS
-	
 	private static void init() {
 		handler.getCamera().moveAbs(0,0);
 		setVariables();
@@ -109,11 +114,12 @@ public class GameState extends State {
 	}
 
 	private static void lanuchLevel() {
-		loadWorld(world, "res/worlds/level.txt");
+		loadWorld(world, "/worlds/level.txt");
 		loadWorldObjects();
 	}
 	
 	static void loadPlayer() {
+		new AudioPlayer(Assets.loadPlayer);
 		if (player == null) {
 			makeNewPlayer();
 		} else {
@@ -124,6 +130,11 @@ public class GameState extends State {
 	private static void makeNewPlayer() {
 		player = new PlatformingPlayer(handler, new Vector2(100, 400 - 120));
 		entityManager.addPlayer(player);
+	}
+	
+	static void makeNewBear(BufferedImage a) {
+		npc = new ImageSEntity(handler, a, new Vector2(400,-580), 400, 200);
+		entityManager.addEntity(npc);
 	}
 	
 	private static void refreshPlayer() {
@@ -152,16 +163,14 @@ public class GameState extends State {
 	}
 
 	private static void loadPopup() {
-		popup = new TimedPopUp(handler, new Rectangle(0, 0, handler.getGame().getWidth(), handler.getGame().getWidth()),
-				"EMPTY STRING", new Color(0, 255, 0, 255), new Font("Serif", Font.BOLD, 30));
-		popup.clear();
+		popup = new MultiLinePopUp(handler, new Rectangle(0, 0, handler.getGame().getWidth(), handler.getGame().getWidth()),
+				new TextLine("EMPTY STRING", Color.BLACK), Assets.customFontSmall);
 		uiManager.addObject(popup);
 	}
 
 	private static void loadWorldObjects() {
 		
-		npc = new ImageSEntity(handler, Assets.bear, new Vector2(400,-550), 400, 200);
-		entityManager.addEntity(npc);
+		makeNewBear(Assets.bear);
 		
 		//key = new ImageSEntity(handler, Assets.key, new Vector2(1000,200), 100, 100);
 		key = new ImageSEntity(handler, Assets.key, new Vector2(900,900), 200, 100);
@@ -174,12 +183,16 @@ public class GameState extends State {
 		//Lecturn
 		entityManager.addEntity(new ImageSEntity(handler, Assets.lecturn, new Vector2(3300,-650), 100, 150));
 		
-		book = new ImageSEntity(handler, Assets.book, new Vector2(3300,-700), 80, 80);
+		book = new ImageSEntity(handler, Assets.book, new Vector2(3310,-700), 80, 80);
 		book.setBounds(new Rectangle(0,0,100,200));
 		entityManager.addEntity(book);
 		
-		rag = new ImageSEntity(handler, Assets.rag, new Vector2(2350,-300), 50, 100);
+		//Hook
+		entityManager.addEntity(new ImageSEntity(handler, Assets.hook, new Vector2(2275,-360), 100, 100));
+		
+		rag = new ImageSEntity(handler, Assets.rag, new Vector2(2265,-350), 50, 100);
 		entityManager.addEntity(rag);
+		
 	}
 	
 	@Override
@@ -200,6 +213,11 @@ public class GameState extends State {
 			if (new Rectangle(3400, -1900, 800, 600).contains(player.getPosition().x, player.getPosition().y)) {
 				win();
 			}
+			if (npc.onScreen() && !bearSpoke) {
+				bearSpoke = true;
+				new AudioPlayer(Assets.bearRoar);
+				TextHandler.messageUser("Grrrah.. COUGH COUGH ... Hey you!");
+			}
 		}
 	}
 
@@ -216,10 +234,11 @@ public class GameState extends State {
 		drawBackground(g);
 		world.render(deltaTime, g);
 		if (player != null) player.render(deltaTime, g);
-		prompt.setDisplayText(scanner.getString());
+		prompt.setDisplayText(new TextLine(scanner.getString(), promptColor));
 	}
 	
 	public static void win() {
+		new AudioPlayer(Assets.applause);
 		handler.getGame().setCurrentState(new WinState(handler));
 	}
 
@@ -251,8 +270,8 @@ public class GameState extends State {
 		scanner = new ReadInString();
 		handler.getKeyManager().addResponder(scanner);
 		prompt = new TextBox(handler, new Rectangle(0, handler.getGame().getHeight() - PROMPT_HEIGHT,
-				handler.getGame().getWidth(), PROMPT_HEIGHT), "Initialized Text",
-				new Color(0,0,0,200), new Color(0,255,0,255), new Font("Serif", Font.BOLD, 30));
+				handler.getGame().getWidth(), PROMPT_HEIGHT), new TextLine("EMPTY STRING", promptColor),
+				new Color(0,0,0,200), Assets.customFontSmall);
 		closePrompt();
 		uiManager.addObject(prompt);
 		openPrompt();
@@ -260,7 +279,7 @@ public class GameState extends State {
 
 	private static void loadConsole() {
 		console = new Console(handler, new Rectangle(0, 0, handler.getGame().getWidth(), handler.getGame().getHeight()),
-				new Color(0,0,0,255), new Color(0,255,0,255), new Font("Serif", Font.BOLD, 30));				
+				new Color(0,0,0,255), Assets.customFontSmall);			
 		uiManager.addObject(console);
 	}
 	
@@ -308,7 +327,7 @@ public class GameState extends State {
 	private static void openPrompt() {
 		scanner.setString("");
 		scanner.setListening(true);
-		prompt.setDisplayText(scanner.getString());
+		prompt.setDisplayText(new TextLine(scanner.getString(), promptColor));
 		prompt.setVisible(true);
 	}
 	
@@ -343,8 +362,8 @@ public class GameState extends State {
 	static void killPlayer() {
 		playerDead = true;
 		disablePlayer();
-		//Play Animation
-		TextHandler.logUser("You have perished");
+		new AudioPlayer(Assets.famousScream);
+		TextHandler.errorUser("You have perished.");
 	}
 	
 	//GETTERS AND SETTERS

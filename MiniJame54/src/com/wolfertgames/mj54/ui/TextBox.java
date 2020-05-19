@@ -12,19 +12,17 @@ import com.wolfertgames.mj54.display.gfx.AssetBuilder;
 public class TextBox extends UIObject {
 	
 	protected Rectangle textArea;
-	protected String displayText;
+	protected TextLine displayText;
 	
-	protected Color textColor;
 	protected Color backgroundColor;
 	protected Font font;
 
 	public TextBox(Handler handler, Rectangle dimensions,
-				String displayText, Color background, Color text, Font font) {
+				TextLine displayText, Color background, Font font) {
 		super(handler, dimensions);
 		this.textArea = dimensions;
 		this.displayText = displayText;
-		this.backgroundColor = background;
-		this.textColor = text;
+		backgroundColor = background;
 		this.font = font;
 	}
 
@@ -54,20 +52,12 @@ public class TextBox extends UIObject {
 		this.textArea = textArea;
 	}
 
-	public String getDisplayText() {
+	public TextLine getDisplayText() {
 		return displayText;
 	}
 
-	public void setDisplayText(String displayText) {
+	public void setDisplayText(TextLine displayText) {
 		this.displayText = displayText;
-	}
-
-	public Color getTextColor() {
-		return textColor;
-	}
-
-	public void setTextColor(Color textColor) {
-		this.textColor = textColor;
 	}
 
 	public Color getBackgroundColor() {

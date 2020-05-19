@@ -13,27 +13,23 @@ public class TimedPopUp extends TextBox implements Timer {
 	
 	protected long prevTime;
 	protected long interval = 1000;
-	protected Color originalText;
+	protected int currentAlpha;
 	
-	public TimedPopUp(Handler handler, Rectangle dimensions, String displayText, Color originalText, Font font) {
-		super(handler, dimensions, displayText, new Color(0,0,0,0), originalText, font);
-		this.originalText = originalText;
+	public TimedPopUp(Handler handler, Rectangle dimensions, TextLine displayText, Font font) {
+		super(handler, dimensions, displayText, new Color(0,0,0,0), font);
 	}
 	
-	public void popUp(long interval, String text) {
-		System.out.println("Popup!");
+	public void popUp(long interval, TextLine text) {
 		this.interval = interval;
 		this.displayText = text;
-		textColor = originalText;
+		currentAlpha = 255;
 		clearTimer();
 	}
 	
 	@Override
 	public void tick(float deltaTime) {
-		if (getTimer() > interval && textColor.getAlpha() > 0 ) {
-			System.out.println("Fading");
-			System.out.println(textColor + " | " + textColor.getAlpha());
-			textColor = fade(textColor, 0.95f);
+		if (getTimer() > interval && currentAlpha > 0 ) {
+			fade(displayText, 0.95f);
 		}
 	}
 
@@ -53,17 +49,18 @@ public class TimedPopUp extends TextBox implements Timer {
 		prevTime = System.currentTimeMillis();
 	}
 	
-	private Color fade(Color c, float scale) {
-		int a = c.getAlpha();
-		if (a < 1) {
-			return new Color(c.getRed(), c.getGreen(), c.getBlue(), 0);
+	private void fade(TextLine t, float scale) {
+		if (currentAlpha < 1) {
+			currentAlpha = 0;
 		} else {
-			return new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (c.getAlpha() * scale));
+			currentAlpha *= scale;
 		}
+		t.setColor(new Color(t.getColor().getRed(), t.getColor().getGreen(), t.getColor().getBlue(), currentAlpha));
 	}
 	
-	public void clear() {
-		textColor = new Color(textColor.getRed(), textColor.getGreen(), textColor.getBlue(), 0);
+	public void fadeCompletly() {
+		displayText.setColor(new Color(displayText.getColor().getRed(),
+				displayText.getColor().getGreen(), displayText.getColor().getBlue(), 0));
 	}
 
 }

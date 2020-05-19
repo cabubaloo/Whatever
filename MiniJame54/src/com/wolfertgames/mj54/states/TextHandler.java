@@ -1,5 +1,8 @@
 package com.wolfertgames.mj54.states;
 
+import java.awt.Color;
+import java.util.ArrayList;
+
 import com.wolfertgames.gj54.entities.statics.ImageSEntity;
 import com.wolfertgames.gj54.math.Vector2;
 import com.wolfertgames.mj54.commands.Subject;
@@ -7,31 +10,41 @@ import com.wolfertgames.mj54.commands.Verb;
 import com.wolfertgames.mj54.display.gfx.Assets;
 import com.wolfertgames.mj54.rooms.ComputerRoom;
 import com.wolfertgames.mj54.rooms.Room;
+import com.wolfertgames.mj54.sound.AudioPlayer;
+import com.wolfertgames.mj54.ui.TextLine;
 
 public class TextHandler {
 	
-	public static enum Response { WHERE, FAR, LACK, NOGO, HOW, NONEED}
+	public static enum Response { WHERE, FAR, LACK, NOGO, HOW, NONEED};
+	
+	public static Color errorColor = Color.red;
+	public static Color warnColor = Color.yellow;
+	public static Color messageColor = Color.green;
+	public static Color congratsColor = Color.magenta;
 	
 	public static final Subject[] recognizedSubjects =  {
-			new Subject("player", new String[] {"self", "me"}),
+			new Subject("player", new String[] {"player.exe", "file"}),
 			new Subject("jam", new String[] {"spill"}),
 			new Subject("computer", new String[] {"pc", "mac", "desktop", "machine"}),
-			new Subject("rag", new String[] {"towel", "fabric"}),
+			new Subject("rag", new String[] {"towel", "fabric", "cloth"}),
 			new Subject("breaker", new String[] {"panel"}),
 			new Subject("painting", new String[] {"painting", "image"}),
 			new Subject("safe", new String[] {"box"}),
 			new Subject("code", new String[] {"paper", "secret"}),
 			new Subject("flashlight", new String[] {"torch"}),
 			new Subject("drawer", new String[] {"cupboard"}),
-			new Subject("battery", new String[] {"cell", "d-cell"}),
+			new Subject("battery", new String[] {"cell", "d-cell", "batteries"}),
 			new Subject("book", new String[] {"tome", "bible"}),
 			new Subject("key", new String[] {"brass", "unlocker"}),
-			new Subject("man", new String[] {"npc", "person", "sans", "bear", "animal"}),
-			new Subject("vault", new String[] {"door", "wall"}),
+			new Subject("bear", new String[] {"npc", "animal", "monster"}),
+			new Subject("vault", new String[] {"door", "wall", "bank"}),
 			new Subject("code", new String[] {"numbers", "combination", "password"}),
 			new Subject("null", new String[] {"now"}),
 			new Subject("right", new String[] {"r"}),
-			new Subject("left", new String[] {"l"})
+			new Subject("left", new String[] {"l"}),
+			new Subject("kitchen", new String[] {"dining"}),
+			new Subject("garage", new String[] {"shop"}),
+			new Subject("backroom", new String[] {"batcave"})
 	};
 	
 	private static Verb loadGame = new Verb("load", new String[] {"bootup", "start", "run"}, new String[] {"player"}, false);
@@ -41,22 +54,27 @@ public class TextHandler {
 	
 	public static final Verb[] recognizedVerbs =  {
 			new Verb("restart", new String[] {"respawn", "reload"}, new String[] {"null"}),
-			new Verb("grab", new String[] {"pickup", "snatch", "lift", "get"},
-					new String[] {"book", "key", "battery", "flashlight", "code", "rag"}),
-			new Verb("speak", new String[] {"talk", "yell"}, new String[] {"man"}),
-			new Verb("enter", new String[] {"write", "submit", "spin"}, new String[] {"code"}),
+			new Verb("grab", new String[] {"pickup", "snatch", "lift", "get", "remove", "take"},
+					new String[] {"book", "key", "battery", "flashlight", "code", "rag", "jam"}),
+			new Verb("speak", new String[] {"talk", "yell", "pet", "touch", "hug"}, new String[] {"bear"}),
+			new Verb("enter", new String[] {"write", "submit", "spin"}, new String[] {"code", "garage", "kitchen", "backroom"}),
 			new Verb("wipe", new String[] {"clean"}, new String[] {"jam"}),
 			new Verb("read", new String[] {"scan", "browse", "digest"}, new String[] {"book"}),
-			new Verb("open", new String[] {"unlock"}, new String[] {"vault", "drawer", "safe"}),
+			new Verb("open", new String[] {"unlock"}, new String[] {"vault", "drawer", "safe", "breaker", "player"}),
+			new Verb("help", new String[] {"h", "?"}, new String[] {"null"}),
+			new Verb("grammer", new String[] {"g", "rules"}, new String[] {"null"}),
 			new Verb("clear", new String[] {"empty"}, new String[] {"null"}),
+			new Verb("hurt", new String[] {"attack", "abuse", "hit"}, new String[] {"bear"}),
 			new Verb("kill", new String[] {"murder", "end"}, new String[] {"player"}),
-			new Verb("go", new String[] {"move", "walk"}, new String[] {"right", "left"}),
-			new Verb("logout", new String[] {"move", "walk"}, new String[] {"null"}),
-			new Verb("look", new String[] {"view", "observe"}, new String[] {"null"}),
+			new Verb("replace", new String[] {"change"}, new String[] {"battery"}),
+			new Verb("go", new String[] {"move", "walk"}, new String[] {"right", "left", "garage", "kitchen", "backroom"}),
+			new Verb("logout", new String[] {"shutdown"}, new String[] {"null"}),
+			new Verb("flip", new String[] {"invert"}, new String[] {"breaker"}),
+			new Verb("look", new String[] {"view", "observe"}, new String[] {"null", "breaker", "painting", "safe"}),
 			new Verb("inventory", new String[] {"items", "things", "i"}, new String[] {"null"}),
 			new Verb("use", new String[] {"interact", "apply"},
-					new String[] {"breaker", "battery", "flashlight", "computer", "key", "rag"}),
-			new Verb("examine", new String[] {"inspect"}, new String[] {"breaker", "painting", "safe"}),
+					new String[] {"breaker", "battery", "flashlight", "computer", "key", "rag", "code"}),
+			new Verb("examine", new String[] {"inspect", "investigate"}, new String[] {"breaker", "painting", "safe"}),
 			loadGame, restart, jump, win
 	};
 	
@@ -117,75 +135,120 @@ public class TextHandler {
 	}
 	
 	public static void announceRoom() {
-		logUser("You entered the " + currentRoom.getName() + ".");
+		messageUser("You entered the " + currentRoom.getName() + ".");
 	}
 	
 	public static void intro() {
-		logUser("Welcome.");
-		logUser("Type \"help\" for guidance.");
+		messageUser("Welcome.");
+		messageUser("Type \"help\" for guidance.");
 	}
 	
 	public static void lookAround() {
 		if (currentRoom == kitchen) {
 			if (!openedDrawer) {
-				logUser("You notice drawer slighty ajar.");
+				messageUser("You notice a drawer slighty ajar.");
 			} else if (!hasBattery){
-				logUser("You see a D-Cell Battery inside the drawer.");
+				messageUser("You see a D-Cell Battery inside the drawer.");
 			}
 			if (hasStickyRag) {
-				logUser("The table is spotless");
+				messageUser("The table is spotless");
 			} else {
-				logUser("Somebody spilled some jam on the table");
+				messageUser("Somebody spilled some jam on the table");
 			}
 		} else if (currentRoom == garage) {
 			if (hasFlashlight) {
-				logUser("You notice a breaker panel in the back.");
+				messageUser("You notice a breaker panel in the back.");
 			} else {
-				logUser("You see a flashlight on the workbench.");
-				logUser("You also notice a breaker panel in the back.");
+				messageUser("You see a flashlight on the workbench.");
+				messageUser("You also notice a breaker panel in the back.");
 			}
 		} else if (currentRoom == backroom) {
 			if (hasLight) {
-				logUser("There is a computer in the corner with");
-				logUser("some cobwebs all over it.");
+				messageUser("There is a computer in the corner with");
+				messageUser("some cobwebs all over it.");
 				if (foundSafe) {
 					if (safeOpen) {
-						logUser("There's a opened safe in the wall.");
+						messageUser("There's a opened safe in the wall.");
 					} else {
-						logUser("There's a locked safe in the wall.");
+						messageUser("There's a locked safe in the wall.");
 					}
 				} else {
-					logUser("There's a strange painting on the wall.");
+					messageUser("There's a strange painting on the wall.");
 				}
 			} else {
-				logUser("It's too dark! You can't see anything.");
+				messageUser("It's too dark! You can't see anything.");
 			}
 		} else if (currentRoom == computer) {
-			logUser("There is one file titled PLAYER.exe");
+			messageUser("There is one file titled PLAYER.exe");
 		}
 		currentRoom.printOptions();
 	}
 	
-	public static void logUser(String s) {
-		GameState.console.addNewLine(s);
+	public static void messageUser(String s) {
+		new AudioPlayer(Assets.type);
+		logUser(s, messageColor);
+	}
+	
+	public static void messageUser(String[] s) {
+		new AudioPlayer(Assets.type);
+		logUser(s, messageColor);
+	}
+	
+	public static void errorUser(String s) {
+		new AudioPlayer(Assets.error);
+		logUser(s, errorColor);
+	}
+	
+	public static void warnUser(String s) {
+		new AudioPlayer(Assets.slapSound);
+		logUser(s, warnColor);
+	}
+	
+	public static void warnUser(String[] s) {
+		new AudioPlayer(Assets.slapSound);
+		logUser(s, warnColor);
+	}
+	
+	public static void rewardUser(String s) {
+		logUser(s, congratsColor);
+	}
+	
+	public static void rewardUser(String[] s) {
+		logUser(s, congratsColor);
+	}
+	
+	public static void logUser(String s, Color c) {
+		GameState.console.addNewLine(new TextLine(s, c));
 		GameState.console.updateRender();
 		if (!GameState.console.onScreen()) {
-			GameState.popup.popUp(5000, s);
+			GameState.popup.popUp(5000, new TextLine(s, c));
+		}
+	}
+	
+	public static void logUser(String[] s, Color c) {
+		TextLine[] t = new TextLine[s.length];
+		for (int i = 0; i < s.length; i++) t[i] = new TextLine(s[i], c);
+		GameState.console.addNewLines(t);
+		GameState.console.updateRender();
+		if (!GameState.console.onScreen()) {
+			GameState.popup.popUpMany(5000, t);
 		}
 	}
 	
 	static void inventory() {
-		logUser("Inventory:");
-		if (loadedFlashlight) logUser("Flashlight");
+		ArrayList<String> inventory = new ArrayList<String>();
+		inventory.add("Inventory:");
+		if (loadedFlashlight) inventory.add("Flashlight");
 		else {
-			if (hasFlashlight) logUser("Flashlight (Dead)");
-			if (hasBattery) logUser("Battery");
+			if (hasFlashlight) inventory.add("Flashlight (Dead)");
+			if (hasBattery) inventory.add("Battery");
 		}
-		if (hasKey) logUser ("Key");
-		if (hasBook) logUser ("Book");
-		if (hasCode) logUser ("Combination");
-		if (hasStickyRag) logUser("Jam-Soaked Rag");
-		else if (hasRag) logUser("Rag");
+		if (hasKey) inventory.add ("Key");
+		if (hasBook) inventory.add ("Book");
+		if (hasCode) inventory.add ("Combination");
+		if (hasStickyRag) inventory.add("Jam-Soaked Rag");
+		else if (hasRag) inventory.add("Rag");
+		messageUser(inventory.toArray(new String[inventory.size()]));
 	}
 	
 	public static void parseCommand(String command) {
@@ -200,14 +263,13 @@ public class TextHandler {
 		String subjectWord = (tokens.length == 1) ? "null" : tokens[1];
 		Subject subject = getSubject(subjectWord);
 		if (verb == null) {
-			logUser("How does one \"" + verbWord + "\"?");
+			errorUser("How does one \"" + verbWord + "\"?");
 		} else if (subject == null) {
-			logUser("What is a \"" + subjectWord + "\"?");
+			errorUser("What is a \"" + subjectWord + "\"?");
 		} else if (!isGoodGrammer(verb, subject)) {
-			logUser("Thats just silly!");
+			errorUser("Thats just silly!");
 		} else {
-			GameState.console.addNewLine("-->" + command);
-			GameState.console.updateRender();
+			logUser("--" + command, Color.cyan);
 			runCommand(verb, subject, verbWord, subjectWord);
 		}
 	}
@@ -217,6 +279,7 @@ public class TextHandler {
 	}
 	
 	private static Verb getVerb(String verb) {
+		verb = verb.toLowerCase();
 		for (int i = 0; i < recognizedVerbs.length; i++) {
 			if (recognizedVerbs[i].knownAs(verb) && recognizedVerbs[i].isUnlocked())
 				return recognizedVerbs[i];
@@ -225,6 +288,7 @@ public class TextHandler {
 	}
 	
 	private static Subject getSubject(String subject) {
+		subject = subject.toLowerCase();
 		for (int i = 0; i < recognizedSubjects.length; i++) {
 			if (recognizedSubjects[i].knownAs(subject) && recognizedSubjects[i].isUnlocked())
 				return recognizedSubjects[i];
@@ -232,6 +296,11 @@ public class TextHandler {
 		return null;
 	}
 	
+	private static void changeRooms(Room room) {
+		currentRoom = room;
+		new AudioPlayer(Assets.walk);
+		announceRoom();
+	}
 
 	private static void runCommand(Verb verb, Subject subject, String verbWord, String subjectWord) {
 		System.out.println("Running Command...");
@@ -239,43 +308,63 @@ public class TextHandler {
 		if (verb.getId().contentEquals("go")) {
 			if (subject.getId().contentEquals("left")) {
 				if (currentRoom.goLeft() != null) {
-					currentRoom = currentRoom.goLeft();
-					announceRoom();
+					changeRooms(currentRoom.goLeft());
 				} else {
 					logCommon(subjectWord, Response.NOGO);
 				}
 			} else if (subject.getId().contentEquals("right")) {
 				if (currentRoom.goRight() != null) {
-					currentRoom = currentRoom.goRight();
-					announceRoom();
+					changeRooms(currentRoom.goRight());
 				} else {
 					logCommon(subjectWord, Response.NOGO);
 				}
+			} else if (subject.getId().contentEquals("backroom")) {
+				checkIfValidMove(backroom);
+			} else if (subject.getId().contentEquals("kitchen")) {
+				checkIfValidMove(kitchen);
+			} else if (subject.getId().contentEquals("garage")) {
+				checkIfValidMove(garage);
 			}
 			
 		} else if (verb.getId().contentEquals("win")) {
 			GameState.win();
 			
+		} else if (verb.getId().contentEquals("help")) {
+			warnUser(new String[] {"Enter commands to explore and interact",
+			"with the world. Type \"grammer\" to",
+			"learn the command format.",
+			"Try using \"look\" to investigate your",
+			"surroundings!"});
+			
+		} else if (verb.getId().contentEquals("grammer")) {
+			warnUser(new String[] {"Example Command: [verb] [subject]",
+			"The subject can be blank but you can",
+			"only ever use one or two words."});
+			
 		} else if (verb.getId().contentEquals("look")) {
-			lookAround();
+			if (subject.getId().contentEquals("null")) {
+				lookAround();
+			} else if (subject.getId().contentEquals("breaker")){
+				examineBreaker();
+			} else if (subject.getId().contentEquals("painting")){
+				examinePainting(subjectWord);
+			} else if (subject.getId().contentEquals("safe")){
+				examineSafe(subjectWord);
+			}
 			
 		} else if (verb.getId().contentEquals("inventory")) {
 			inventory();
 			
+		} else if (verb.getId().contentEquals("replace")) {
+			if (subject.getId().contentEquals("battery")) {
+				loadBattery(subjectWord);
+			}
+			
 		} else if (verb.getId().contentEquals("examine")) {
 			if (subject.getId().contentEquals("breaker")) {
-				if (flippedBreaker) {
-					logUser("The power is now on!");
-				} else {
-					logUser("The main breaker has been tripped.");
-				}
+				examineBreaker();
 			} else if (subject.getId().contentEquals("painting")) {
-				if (currentRoom == backroom && hasLight) {
-					logUser("Theres a safe behind here!");
-					foundSafe = true;
-				} else {
-					logCommon(subjectWord, Response.WHERE);
-				}
+				examinePainting(subjectWord);
 			} else if (subject.getId().contentEquals("safe")) {
 				examineSafe(subjectWord);
 			}
@@ -290,18 +379,34 @@ public class TextHandler {
 			} else if (subject.getId().contentEquals("computer")) {
 				useComputer(subjectWord);
 			} else if (subject.getId().contentEquals("key")) {
-				openSafe(subjectWord);
+				useKey(subjectWord);
 			} else if (subject.getId().contentEquals("rag")) {
 				useRag(subjectWord);
+			} else if (subject.getId().contentEquals("code")) {
+				openVault(subjectWord);
+			}
+			
+		} else if (verb.getId().contentEquals("hurt")) {
+			if (subject.getId().contentEquals("bear")) {
+				messageUser("Maybe you should talk to him instead.");
+			}
+			
+		} else if (verb.getId().contentEquals("flip")) {
+			if (subject.getId().contentEquals("breaker")) {
+				flipBreaker(subjectWord);
 			}
 			
 		} else if (verb.getId().contentEquals("kill")) {
 			if (subject.getId().contentEquals("player")) {
-				GameState.killPlayer();
+				GameState.killPlayer();//if (GameState.player != null) GameState.killPlayer();
+			} else {
+				logCommon(subjectWord, Response.HOW);
 			}
 			
 		} else if (verb.getId().contentEquals("restart")) {
-			GameState.restart();
+			GameState.backToConsole();
+			GameState.loadPlayer();
+			rewardUser("Player ready.");
 			
 		} else if (verb.getId().contentEquals("logout")) {
 			if (currentRoom == computer) {
@@ -314,7 +419,7 @@ public class TextHandler {
 			if (subject.getId().contentEquals("player")) {
 				if (currentRoom == computer) {
 					GameState.loadPlayer();
-					logUser("Player ready.");
+					rewardUser("Player ready.");
 					jump.setUnlocked(true);
 				}
 			}
@@ -332,11 +437,19 @@ public class TextHandler {
 				grabCode(subjectWord);
 			} else if (subject.getId().contentEquals("rag")) {
 				grabRag(subjectWord);
+			} else if (subject.getId().contentEquals("jam")) {
+				cleanJam(subjectWord);
 			}
 		
 		} else if (verb.getId().contentEquals("enter")) {
 			if (subject.getId().contentEquals("code")) {
 				openVault(subjectWord);
+			} else if (subject.getId().contentEquals("backroom")) {
+				checkIfValidMove(backroom);
+			} else if (subject.getId().contentEquals("kitchen")) {
+				checkIfValidMove(kitchen);
+			} else if (subject.getId().contentEquals("garage")) {
+				checkIfValidMove(garage);
 			}
 			
 		} else if (verb.getId().contentEquals("wipe")) {
@@ -345,15 +458,16 @@ public class TextHandler {
 			}
 			
 		} else if (verb.getId().contentEquals("speak")) {
-			if (subject.getId().contentEquals("man")) {
-				talkMan(subjectWord);
+			if (subject.getId().contentEquals("bear")) {
+				talkBear(subjectWord);
 			}
 			
 		} else if (verb.getId().contentEquals("read")) {
 			if (subject.getId().contentEquals("book")) {
 				if (hasBook) {
+					new AudioPlayer(Assets.paper);
 					GameState.player.setWallJumpEnabled(true);
-					logUser("You learned to wall jump!");
+					rewardUser("You learned to wall jump!");
 				} else {
 					logCommon(subjectWord, Response.LACK);
 				}
@@ -366,19 +480,69 @@ public class TextHandler {
 				openDrawer(subjectWord);
 			} else if (subject.getId().contentEquals("safe")) {
 				openSafe(subjectWord);
+			} else if (subject.getId().contentEquals("breaker")) {
+				examineBreaker();
+			} else if (subject.getId().contentEquals("player")) {
+				if (currentRoom == computer) {
+					GameState.loadPlayer();
+					rewardUser("Player ready.");
+					jump.setUnlocked(true);
+				} else {
+					logCommon(subjectWord, Response.WHERE);
+				}
 			}
 			
 		} else if (verb.getId().contentEquals("jump")) {
 			if (subject.getId().contentEquals("null")) {
-				if (GameState.player != null) {
-					GameState.player.setJumpEnabled(true);
-					GameState.player.setVelocity(new Vector2(0,-10));
-					logUser("JUMP unlocked!");
+				if (GameState.player != null && currentRoom == computer) {
+					if (!GameState.player.isJumpEnabled()) {
+						new AudioPlayer(Assets.goodSound);
+						GameState.player.setVelocity(new Vector2(0,-10));
+						GameState.player.setJumpEnabled(true);
+						rewardUser("JUMP unlocked!");
+					}
 				}
 			}
 			
 		} else {
-			logUser("Something went wrong...");
+			errorUser("Something went wrong...");
+		}
+	}
+
+	private static void useKey(String subjectWord) {
+		if (currentRoom == backroom && hasLight && foundSafe) {
+			openSafe("safe");
+		} else {
+			warnUser("What would I use it for?");
+		}
+		
+	}
+
+	private static void checkIfValidMove(Room room) {
+		if (currentRoom == room && currentRoom != computer) {
+			warnUser("You are already there.");
+		} else if (currentRoom == computer) {
+			warnUser("You must logout!");
+		} else {
+			changeRooms(room);
+		}
+	}
+
+	private static void examinePainting(String subjectWord) {
+		if (currentRoom == backroom && hasLight) {
+			new AudioPlayer(Assets.scrape);
+			rewardUser("Theres a safe behind here!");
+			foundSafe = true;
+		} else {
+			logCommon(subjectWord, Response.WHERE);
+		}
+	}
+
+	private static void examineBreaker() {
+		if (flippedBreaker) {
+			messageUser("The power is now on!");
+		} else {
+			messageUser("The main breaker has been tripped.");
 		}
 	}
 
@@ -386,6 +550,7 @@ public class TextHandler {
 		if(GameState.rag.onScreen()) {
 			if (GameState.player.intersecting(GameState.rag)) {
 				if (GameState.rag != null) {
+					new AudioPlayer(Assets.grabSound);
 					hasRag = true;
 					GameState.rag.remove();
 				}
@@ -401,34 +566,40 @@ public class TextHandler {
 		if (hasRag) {
 			if (currentRoom == kitchen) {
 				if (hasStickyRag) {
-					logUser("You already cleaned up the jam.");
+					warnUser("You already cleaned up the jam.");
 				} else if (hasRag) {
 					hasStickyRag = true;
-					logUser("You cleaned up the jam.");
-					logUser("You're rag is now covered in it. So sticky!");
+					new AudioPlayer(Assets.grabSound);
+					rewardUser("You cleaned up the jam.");
+					rewardUser("You're rag is now covered in it. So sticky!");
 				}
 			} else {
-				logUser("Nothing to clean here.");
+				warnUser("Nothing to clean here.");
 			}
 		} else {
 			logCommon(subjectWord, Response.LACK);
 		}
 	}
 
-	private static void talkMan(String subjectWord) {
+	private static void talkBear(String subjectWord) {
 		if (GameState.npc.onScreen()) {
 			if (GameState.npc.intersecting(GameState.player)) {
 				if (hasStickyRag) {
-					logUser("Delicious! He taught you to double jump.");
+					new AudioPlayer(Assets.bearRoar);
+					rewardUser(new String[] {"Marvelous! If you try to jump again",
+							"after you leave the ground, you might just",
+							"find you can! Believe in yourself!"});
 					GameState.entityManager.removeEntity(GameState.npc);
-					GameState.npc = new ImageSEntity(GameState.handler, Assets.bearJam, new Vector2(400,-550), 400, 200);
-					GameState.entityManager.addEntity(GameState.npc);
+					GameState.makeNewBear(Assets.bearJam);
 					GameState.player.setDoubleJumpEnabled(true);
 				} else {
-					logUser("If you bring me jam, I teach you something.");
+					new AudioPlayer(Assets.bearRoar);
+					rewardUser(new String[] {"If you bring me something sweet, I'll",
+							"teach you an advanced jumping technique.",
+							"Do we have a deal?"});
 				}
 			} else {
-				logUser("He can't hear you.");
+				warnUser("He can't hear you.");
 			}
 		} else {
 			logCommon(subjectWord, Response.WHERE);
@@ -438,13 +609,14 @@ public class TextHandler {
 	private static void cleanJam(String subjectWord) {
 		if (currentRoom == kitchen) {
 			if (hasStickyRag) {
-				logUser("You already cleanedup the " + subjectWord + ".");
+				warnUser("You already cleanedup the " + subjectWord + ".");
 			} else if (hasRag) {
 				hasStickyRag = true;
-				logUser("You cleaned up the " + subjectWord + ".");
-				logUser("You're rag is now covered in it. So sticky!");
+				new AudioPlayer(Assets.grabSound);
+				rewardUser("You cleaned up the " + subjectWord + ".");
+				rewardUser("You're rag is now covered in it. So sticky!");
 			} else {
-				logUser("I need something to clean it up with.");
+				warnUser("I need something to clean it up with.");
 			}
 		} else {
 			logCommon(subjectWord, Response.WHERE);
@@ -455,11 +627,12 @@ public class TextHandler {
 		if(GameState.vault.onScreen()) {
 			if (hasCode) {
 				if (GameState.vault != null) {
+					new AudioPlayer(Assets.bigThumpSound);
 					GameState.vault.remove();
 				}
 			} else {
-				logUser("The " + subjectWord + " is locked.");
-				logUser("It needs a special code.");
+				warnUser("The " + subjectWord + " is locked.");
+				warnUser("It needs a special code.");
 			}
 		} else {
 			logCommon(subjectWord, Response.WHERE);
@@ -469,11 +642,12 @@ public class TextHandler {
 	private static void grabCode(String subjectWord) {
 		if (currentRoom == backroom && hasLight && safeOpen) {
 			if (hasCode) {
-				logUser("You already have the " + subjectWord + ".");
+				warnUser("You already have the " + subjectWord + ".");
 			} else {
+				new AudioPlayer(Assets.paper);
 				hasCode = true;
-				logUser("You grab the " + subjectWord + ".");
-				logUser("Its a combination!");
+				rewardUser("You grab the " + subjectWord + ".");
+				rewardUser("Its a combination!");
 			}
 		} else {
 			logCommon(subjectWord, Response.WHERE);
@@ -484,12 +658,12 @@ public class TextHandler {
 		if (currentRoom == backroom && hasLight && foundSafe) {
 			if (safeOpen) {
 				if (hasCode) {
-					logUser("Just some green rags.");
+					warnUser("Just some green rags.");
 				} else {
-					logUser("There's a slip of paper in here.");
+					messageUser("There's a slip of paper in here.");
 				}
 			} else {
-				logUser("It looks like it needs a special key...");
+				warnUser("It looks like it needs a special key...");
 			}
 		} else {
 			logCommon(subjectWord, Response.WHERE);
@@ -499,10 +673,11 @@ public class TextHandler {
 	private static void grabBattery(String subjectWord) {
 		if (currentRoom == kitchen && openedDrawer) {
 			if (hasBattery) {
-				logUser("You already have the " + subjectWord + ".");
+				warnUser("You already have the " + subjectWord + ".");
 			} else {
+				new AudioPlayer(Assets.grabSound);
 				hasBattery = true;
-				logUser("You grab the " + subjectWord + ".");
+				rewardUser("You grab the " + subjectWord + ".");
 			}
 		} else {
 			logCommon(subjectWord, Response.WHERE);
@@ -512,10 +687,11 @@ public class TextHandler {
 	private static void grabFlashlight(String subjectWord) {
 		if (currentRoom == garage) {
 			if (hasFlashlight) {
-				logUser("You already have the " + subjectWord + ".");
+				warnUser("You already have the " + subjectWord + ".");
 			} else {
+				new AudioPlayer(Assets.grabSound);
 				hasFlashlight = true;
-				logUser("You grab the " + subjectWord + ".");
+				rewardUser("You grab the " + subjectWord + ".");
 			}
 		} else {
 			logCommon(subjectWord, Response.WHERE);
@@ -526,6 +702,7 @@ public class TextHandler {
 		if (GameState.book.onScreen()) {
 			if (GameState.player.intersecting(GameState.book)) {
 				if (GameState.book != null) {
+					new AudioPlayer(Assets.grabSound);
 					hasBook = true;
 					GameState.book.remove();
 				}
@@ -541,6 +718,7 @@ public class TextHandler {
 		if (GameState.key.onScreen()) {
 			if (GameState.player.intersecting(GameState.key)) {
 				if (GameState.key != null) {
+					new AudioPlayer(Assets.grabSound);
 					hasKey = true;
 					GameState.key.remove();
 				}
@@ -555,14 +733,15 @@ public class TextHandler {
 	private static void useFlashlight(String subjectWord) {
 		if (hasFlashlight) {
 			if (loadedFlashlight) {
+				new AudioPlayer(Assets.buttonSound);
 				if (hasLight) {
-					logUser("The light winks out.");
+					warnUser("The light winks out.");
 				} else {
-					logUser("Light fills the room!");
+					rewardUser("Light fills the room!");
 				}
 				hasLight = !hasLight;
 			} else {
-				logUser("The batteries are dead.");
+				warnUser("The batteries are dead.");
 			}
 		} else {
 			logCommon(subjectWord, Response.LACK);
@@ -572,12 +751,13 @@ public class TextHandler {
 	private static void useComputer(String subjectWord) {
 		if (currentRoom == backroom && hasLight) {
 			if (!flippedBreaker) {
-				logUser("The power is out.");
+				warnUser("The power is out.");
 			} else {
-				logUser("The computer light glows.");
+				new AudioPlayer(Assets.computerBeep);
+				rewardUser("The computer light glows.");
 				currentRoom = computer;
 				announceRoom();
-				logUser("You may \"logout\" at any time.");
+				messageUser("You may \"logout\" at any time.");
 				loadGame.setUnlocked(true);
 				restart.setUnlocked(true);
 			}
@@ -593,7 +773,8 @@ public class TextHandler {
 					logCommon(null, Response.NONEED);
 				} else {
 					loadedFlashlight = true;
-					logUser("You changed the flashlight's batteries.");
+					new AudioPlayer(Assets.goodSound);
+					rewardUser("You changed the flashlight's batteries.");
 				}
 			} else {
 				logCommon(null, Response.HOW);
@@ -605,8 +786,9 @@ public class TextHandler {
 
 	private static void flipBreaker(String subjectWord) {
 		if (currentRoom == garage) {
+			new AudioPlayer(Assets.switchSound);
 			flippedBreaker = !flippedBreaker;
-			logUser("You flipped the main breaker.");
+			rewardUser("You flipped the main breaker.");
 		} else {
 			logCommon(subjectWord, Response.WHERE);
 		}
@@ -615,10 +797,11 @@ public class TextHandler {
 	private static void openDrawer(String subjectWord) {
 		if (currentRoom == kitchen) {
 			if (openedDrawer) {
-				logUser("Its already open.");
+				warnUser("Its already open.");
 			} else {
 				openedDrawer = true;
-				logUser("You opened the drawer");
+				new AudioPlayer(Assets.drawerOpening);
+				rewardUser("You opened the drawer");
 			}
 		} else {
 			logCommon(subjectWord, Response.WHERE);
@@ -628,10 +811,15 @@ public class TextHandler {
 	private static void openSafe(String subjectWord) {
 		if (currentRoom == backroom && hasLight && foundSafe) {
 			if (safeOpen) {
-				logUser("Its already open.");
+				warnUser("Its already open.");
 			} else {
-				safeOpen = true;
-				logUser("You opened the safe with the key.");
+				if (hasKey) {
+					safeOpen = true;
+					new AudioPlayer(Assets.keySound);
+					rewardUser("You opened the safe with the key.");
+				} else {
+					warnUser("It's locked tight.");
+				}
 			}
 		} else {
 			logCommon(subjectWord, Response.WHERE);
@@ -641,31 +829,30 @@ public class TextHandler {
 	private static void logCommon(String s, Response n) {
 		switch(n) {
 		case WHERE:
-			logUser("I don't see a " + s + ".");
+			warnUser("I don't see a " + s + ".");
 			break;
 		case FAR:
-			logUser("The " + s + " is too far away.");
+			warnUser("The " + s + " is too far away.");
 			break;
 		case LACK:
-			logUser("You don't have  a " + s + ".");
+			warnUser("You don't have  a " + s + ".");
 			break;
 		case NOGO:
-			logUser("You can't go " + s + ".");
+			warnUser("You can't go " + s + ".");
 			break;
 		case HOW:
-			logUser("How would I do that?");
+			warnUser("How would I do that?");
 			break;
 		case NONEED:
-			logUser("You've already done that.");
+			warnUser("You've already done that.");
 			break;
 		default:
-			logUser(s + "? What are you saying bub?");
+			warnUser(s + "? What are you saying bub?");
 			break;
 		}
 	}
 
 	private static void badGrammer() {
-		GameState.console.addNewLine("ERROR");
-		GameState.console.updateRender();
+		errorUser("Who taught you to write?");
 	}
 }

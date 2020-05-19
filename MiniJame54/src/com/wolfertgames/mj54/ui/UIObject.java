@@ -14,6 +14,7 @@ public abstract class UIObject implements MouseEventResponder {
 	protected Rectangle clickBounds;
 	protected boolean hovering;
 	protected boolean visible = true;
+	protected boolean active = true;
 	
 	public UIObject(Handler handler, Rectangle clickBounds) {
 		this.handler = handler;
@@ -91,6 +92,14 @@ public abstract class UIObject implements MouseEventResponder {
 	
 	public boolean onScreen() {
 		return new Rectangle((int)clickBounds.x, (int)clickBounds.y, clickBounds.width, clickBounds.height).intersects(handler.getCamera().getScreen());
+	}
+	
+	public void remove() {
+		active = false;
+	}
+
+	public boolean isActive() {
+		return active;
 	}
 	
 }

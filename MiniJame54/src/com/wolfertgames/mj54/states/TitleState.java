@@ -10,6 +10,7 @@ import com.wolfertgames.mj54.display.gfx.Assets;
 import com.wolfertgames.mj54.entities.EntityManager;
 import com.wolfertgames.mj54.input.MouseManager;
 import com.wolfertgames.mj54.input.ReadInString;
+import com.wolfertgames.mj54.sound.AudioPlayer;
 import com.wolfertgames.mj54.ui.ClickListener;
 import com.wolfertgames.mj54.ui.TextBox;
 import com.wolfertgames.mj54.ui.UIImageButton;
@@ -24,7 +25,6 @@ public class TitleState extends State {
 	 * 	Role:	Runs the Menu Screen on boot up
 	 * 
 	 */
-	private World world;
 	private UIManager uiManager;
 	
 	public TitleState(Handler handler) {
@@ -35,16 +35,16 @@ public class TitleState extends State {
 	
 	public void init() {
 		uiManager = new UIManager();
-		world = new World(new EntityManager(), uiManager);
+		handler.setWorld(new World(new EntityManager(), uiManager));
 		handler.getGame().getMouseManager().addResponder(uiManager);
 		
 		UIObject obj = new UIImageButton(handler, new Rectangle(250, 370, 300, 150), Assets.buttons, new ClickListener() {
 			@Override
-			public void onClick() {
+			public void onClick(UIObject o) {
 				System.out.println("Started Game...");
-				handler.getGame().setCurrentState(new GameState(handler));			}
-			
-		});
+				if (handler.getGame().getCurrentState() instanceof TitleState)
+					handler.getGame().setCurrentState(new GameState(handler));
+			}});
 		uiManager.addObject(obj);
 	}
 

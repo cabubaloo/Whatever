@@ -3,12 +3,15 @@ package com.wolfertgames.mj54;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.image.BufferStrategy;
+import java.lang.management.ManagementFactory;
 
 import com.wolfertgames.mj54.display.Display;
 import com.wolfertgames.mj54.display.gfx.Assets;
 import com.wolfertgames.mj54.display.gfx.Camera;
 import com.wolfertgames.mj54.input.KeyManager;
 import com.wolfertgames.mj54.input.MouseManager;
+import com.wolfertgames.mj54.sound.AudioPlayer;
+import com.wolfertgames.mj54.states.GameState;
 import com.wolfertgames.mj54.states.State;
 import com.wolfertgames.mj54.states.TitleState;
 import com.wolfertgames.mj54.world.World;
@@ -115,11 +118,15 @@ public class Game implements Runnable {
 		display.getFrame().addMouseMotionListener(mouseManager);
 		display.getCanvas().addMouseMotionListener(mouseManager);
 		
+		//OST
+		new AudioPlayer(Assets.ostTrack, true);
+		
 		currentState = new TitleState(handler);
 	}
 	
 	//Process and Update Game Variables
 	private void tick(float deltaTime) {
+		//System.out.println(java.lang.Thread.activeCount() + "|" + ManagementFactory.getThreadMXBean().getThreadCount());
 		keyManager.tick();
 		currentState.tick(deltaTime);
 	}
